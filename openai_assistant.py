@@ -22,7 +22,7 @@ def get_system_prompt() -> str:
     """Returns the system prompt with table schemas."""
     system_prompt = {
     "role": "system", 
-    "content": dedent(f"""You are an expert and useful BI assistant. You only use the data provided to you to reply on questions.
+    "content": dedent(f"""You are an expert and useful IMDB assistant. You only use the data provided to you to reply on questions and and do not attempt any other questions which are outside the data provided.
                The tables you can use and their descriptions are provided below in TOML format in the following way:
                 
                 [table_name]

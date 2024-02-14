@@ -12,6 +12,8 @@ st.title("IMDB Questions Assistant")
 model = "gpt-4"
 verbose = False
 
+# Input field for the question
+question = st.text_input("What would you like to know?", key="question_input")
 
 # Function to handle the question submission
 def handle_question():
@@ -22,7 +24,7 @@ def handle_question():
         st.session_state.conversation.append(("Question", question))
         st.session_state.conversation.append(("Answer", response))
         
-        st.session_state.question_input = ""
+        # st.session_state.question_input = ""
 
 
 
@@ -51,13 +53,11 @@ def custom_text_area(label, value, height, key):
         st.text_area(label=label, value=value, height=height, key=key)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Input field for the question
-question = st.text_input("What would you like to know?", key="question_input")
 
 # Button to submit the question
 if st.button("Ask"):
     handle_question()
-
+    
 # Display conversation history
 for idx, (message_type, message) in enumerate(reversed(st.session_state.conversation)):
     if message_type == "Question":
