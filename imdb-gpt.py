@@ -1,25 +1,66 @@
-import argparse
-from database import execute_query
-from openai_assistant import (
-    ask_question,
-    get_instructions,
-    get_schemas,
-    get_system_prompt,
-    get_tools,
-)
-if __name__ == "__main__":
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('-m', '--model', default='gpt-4', help='Name of OpenAI chat model to use', dest='model')
-    arg_parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Enable verbose mode', dest='verbose')
-    args = arg_parser.parse_args()
+import streamlit as st
+from openai_assistant import ask_question
 
-    print(f"[Running using {args.model}]")
-    print("\nWelcome! Ask as many IMDB-related questions as you would like. To exit, press Ctrl+C.")
-    if args.verbose:
-        print("Verbose mode on.")
-    print("\n")
+# Initialize session state for conversation history if it doesn't exist
+if 'conversation' not in st.session_state:
+    st.session_state['conversation'] = []
 
-    while True:
-        question = input("What would you like to know? ")
-        response = ask_question(question, model=args.model, verbose=args.verbose)
-        print(response + '\n')
+# Streamlit app title
+st.title("IMDB Questions Assistant")
+
+
+model = "gpt-4"
+verbose = False
+
+
+# Function to handle the question submission
+def handle_question():
+    question = st.session_state.question_input
+    if question:  
+        response = ask_question(question, model=model, verbose=verbose)
+        
+        st.session_state.conversation.append(("Question", question))
+        st.session_state.conversation.append(("Answer", response))
+        
+        st.session_state.question_input = ""
+
+
+
+# Function to create custom styled text areas
+def custom_text_area(label, value, height, key):
+    # Unique CSS class for each text area 
+    css_class = f"textarea-{key}"
+    
+    # Custom CSS to style the text area background
+    custom_css = f"""
+        <style>
+            .{css_class} {{
+                background-color: #f0f2f6;
+                border-radius: 5px;
+                padding: 10px;
+            }}
+        </style>
+    """
+    
+    # Display custom CSS
+    st.markdown(custom_css, unsafe_allow_html=True)
+    
+    # Display text area with the custom CSS class
+    with st.container():
+        st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
+        st.text_area(label=label, value=value, height=height, key=key)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# Input field for the question
+question = st.text_input("What would you like to know?", key="question_input")
+
+# Button to submit the question
+if st.button("Ask"):
+    handle_question()
+
+# Display conversation history
+for idx, (message_type, message) in enumerate(reversed(st.session_state.conversation)):
+    if message_type == "Question":
+        custom_text_area(label=f"Q: {idx+1}", value=message, height=75, key=f"q_{idx}")
+    else:  
+        custom_text_area(label=f"A: {idx+1}", value=message, height=100, key=f"a_{idx}")
